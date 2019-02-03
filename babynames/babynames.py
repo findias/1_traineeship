@@ -72,9 +72,10 @@ def main():
 
   filename = args[0]
   if summary:
-    with open(filename + '.summary', 'w') as f:
-      for item in extract_names(filename):
-        f.write('%s\n' % item)
+    for filename in args:
+       with open(filename + '.summary', 'w') as f:
+          for item in extract_names(filename):
+            f.write('%s\n' % item)
   else:
     print('bag')
 
