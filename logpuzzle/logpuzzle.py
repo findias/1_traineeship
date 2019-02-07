@@ -17,6 +17,14 @@ Given an apache logfile, find the puzzle urls and download the images.
 Here's what a puzzle url looks like:
 10.254.254.28 - - [06/Aug/2007:00:13:48 -0700] "GET /~foo/puzzle-bar-aaab.jpg HTTP/1.0" 302 528 "-" "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.6) Gecko/20070725 Firefox/2.0.0.6"
 """
+def url_sort_key(url):
+  """Used to order the urls in increasing order by 2nd word if present."""
+  match = re.search(r'-(\w+)-(\w+)\.\w+', url)
+  if match:
+    return match.group(2)
+  else:
+    return url
+
 def read_urls(filename):
   """Returns a list of the puzzle urls from the given log file,
   extracting the hostname from the filename itself.
@@ -30,14 +38,16 @@ def read_urls(filename):
   with open(filename, 'r') as f:
     log_file = f.read()
     # Looking for the desired string
-    log_list = (re.findall(r'/edu/languages/google-python-class/images/puzzle/\w-\w+.jpg', log_file))
+    if re.search(r'/edu/languages/google-python-class/images/puzzle/\w+-\w+\.\w+', log_file):
+      log_list = (re.findall(r'/edu/languages/google-python-class/images/puzzle/\w+-\w+\.\w+', log_file))
+    else:
+      log_list = (re.findall(r'/edu/languages/google-python-class/images/puzzle/\w-\w+-\w+\.\w+', log_file))
     # Generate urlname
     name = re.search(r'code.\w+.\w+', filename)
-    url_name = 'http://' + name.group(0)
     for item in log_list:
-      url_lst.append(url_name + item)
+      url_lst.append('http://' + name.group(0) + item)
     # Sort URL
-    url_lst.sort()
+    url_lst.sort(key=url_sort_key)
     # Kill duplicates url(In this level I can use set, but I'm interested try another method)
     for x in url_lst:
       if len(notwice_url_lst) > 0:
